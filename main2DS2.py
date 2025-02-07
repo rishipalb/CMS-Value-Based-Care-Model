@@ -41,7 +41,7 @@ if page == "Cost-Benefit Analysis":
     
     # User-defined inputs
     initial_investment = st.sidebar.number_input("Initial Investment ($M)", min_value=100, max_value=1000, value=500, step=50)
-    total_projected_savings = st.sidebar.number_input("Total Projected Savings over 5 Years ($B)", min_value=50, max_value=500, value=100, step=10)
+    total_projected_savings = st.sidebar.number_input("Total Projected Savings over 5 Years ($B)", min_value=1, max_value=500, value=100, step=1)
     
     # ROI Calculation
     roi = total_projected_savings / (initial_investment / 1000)

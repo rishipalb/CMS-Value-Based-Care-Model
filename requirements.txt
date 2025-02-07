@@ -20,9 +20,9 @@ MarkupSafe==3.0.2
 matplotlib==3.10.0
 mdurl==0.1.2
 narwhals==1.25.2
-numpy>=1.20.3,<1.23.0
+numpy>=1.23
 packaging==24.2
-pandas==2.2.3
+pandas==1.5.3
 pillow==11.1.0
 plotly==6.0.0
 protobuf==5.29.3
@@ -36,7 +36,7 @@ referencing==0.36.2
 requests==2.32.3
 rich==13.9.4
 rpds-py==0.22.3
-scipy==1.15.1
+scipy==1.7.3
 six==1.17.0
 smmap==5.0.2
 streamlit==1.42.0

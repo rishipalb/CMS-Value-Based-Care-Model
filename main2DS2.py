@@ -58,8 +58,9 @@ if page == "Cost-Benefit Analysis":
     N_range, b_values, db_dN_values = calculate_aco_incentives(N, e_q, e_c, sigma_q, sigma_c)
     avg_b = np.mean(b_values)  # Dynamically calculated instead of a constant
     
-    # Calculate Adjusted ROI
+    # Calculate Adjusted ROI and Adjusted Savings
     adjusted_roi = roi * (avg_b / 100)
+    adjusted_savings = total_projected_savings * (avg_b / 100)
     roi_difference = ((adjusted_roi - roi) / roi) * 100
     
     # Display results
@@ -72,15 +73,13 @@ if page == "Cost-Benefit Analysis":
     st.subheader("ACO Incentive Impact")
     st.markdown(f"""
     **Adjusted ROI**: **{adjusted_roi:.2f}x** ({roi_difference:+.1f}% from base ROI)  
+    **ACO-Adjusted Savings**: **${adjusted_savings:.2f}B**  
     *This accounts for:*  
     - Average shared savings rate: {avg_b:.1f}%
     - Current team size: N = {N}
     - Quality effort: e_q = {e_q}
     - Cost control effort: e_c = {e_c}
     """)
-
-
-
 
 elif page == "Monte Carlo Simulation":
     st.title("Monte Carlo Simulation with ACO Sensitivity Analysis")

@@ -39,19 +39,34 @@ page = st.sidebar.radio("Go to", ["Cost-Benefit Analysis", "Monte Carlo Simulati
 if page == "Cost-Benefit Analysis":
     st.title("Cost-Benefit Analysis")
     
-    # Calculate core metrics
-    total_savings = annual_savings * years
-    roi = total_savings / (initial_investment / 1000)
+    # User-defined inputs
+    initial_investment = st.sidebar.number_input("Initial Investment ($M)", min_value=100, max_value=1000, value=500, step=50)
+    total_projected_savings = st.sidebar.number_input("Total Projected Savings over 5 Years ($B)", min_value=50, max_value=500, value=100, step=10)
+    
+    # ROI Calculation
+    roi = total_projected_savings / (initial_investment / 1000)
     
     # Calculate ACO-adjusted values
+    N = st.sidebar.slider("Team Size (N)", 1, 100, 20)
+    e_q = st.sidebar.number_input("Quality Effort (e_q)", 0.0, 10.0, 1.0)
+    e_c = st.sidebar.number_input("Cost Control Effort (e_c)", 0.0, 10.0, 1.0)
+    sigma_q = st.sidebar.number_input("Quality Standard Deviation (σ_q)", 0.1, 5.0, 1.0)
+    sigma_c = st.sidebar.number_input("Cost Standard Deviation (σ_c)", 0.1, 5.0, 1.0)
+    
+    # Placeholder function to calculate ACO incentives
+    def calculate_aco_incentives(N, e_q, e_c, sigma_q, sigma_c):
+        return np.linspace(1, N, 100), np.random.rand(100) * 10, np.random.rand(100) * 5
+    
     N_range, b_values, db_dN_values = calculate_aco_incentives(N, e_q, e_c, sigma_q, sigma_c)
     avg_b = np.mean(b_values)
     adjusted_roi = roi * (avg_b / 100)
-    roi_difference = ((adjusted_roi - roi)/roi)*100
-
-    # Main metrics
-    st.write(f"Total Projected Savings over {years} years: **${total_savings} billion**")
-    st.write(f"Base ROI (Without ACO Adjustments): **{roi:.2f}x**")
+    roi_difference = ((adjusted_roi - roi) / roi) * 100
+    
+    # Display results
+    st.write(f"### Financial Summary")
+    st.metric("Initial Investment", f"${initial_investment}M")
+    st.metric("Total Projected Savings (5 Years)", f"${total_projected_savings}B")
+    st.metric("Base ROI (Without ACO Adjustments)", f"{roi:.2f}x")
     
     # ACO-adjusted metrics
     st.subheader("ACO Incentive Impact")
@@ -76,7 +91,7 @@ if page == "Cost-Benefit Analysis":
     # Assumptions section
     st.subheader("Key Assumptions")
     st.markdown(f"""
-    - **Time Horizon**: Fixed {years}-year period
+    - **Time Horizon**: Fixed 5-year period
     - **Cost Structure**:
       - Initial investment: ${initial_investment}M
       - No recurring costs after Year 1
@@ -93,6 +108,7 @@ if page == "Cost-Benefit Analysis":
     - Excludes inflation and demographic changes
     - Linear savings projection
     """)
+
 
 elif page == "Monte Carlo Simulation":
     st.title("Monte Carlo Simulation with ACO Sensitivity Analysis")

@@ -297,5 +297,6 @@ elif page == "ACO Incentive Structure Model":
     Frandsen, Brigham R. & Rebitzer, James B. (2014).  
     "Structuring Incentives within Organizations: The Case of Accountable Care Organizations"  
     **NBER Working Paper No. w20034.**  
-    Available at [SSRN](https://ssrn.com/abstract=2424605)
+    Available at [SSRN](https://ssrn.com/abstract=2424605).
+    Posted: 14 Apr 2014 Last revised: 28 Sep 2024
     """)

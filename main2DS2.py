@@ -36,7 +36,7 @@ def calculate_aco_incentives(N, e_q, e_c, sigma_q, sigma_c):
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to", ["Cost-Benefit Analysis", "Monte Carlo Simulation", "Implementation Cost vs. Savings", "Implementation Timeline", "Cost and Savings Breakdown", "ACO Incentive Structure Model"])
 
-elif page == "Cost-Benefit Analysis":
+if page == "Cost-Benefit Analysis":
     st.title("Cost-Benefit Analysis")
     
     # User-defined inputs

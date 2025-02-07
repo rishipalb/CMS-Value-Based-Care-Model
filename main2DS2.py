@@ -65,11 +65,11 @@ if page == "Cost-Benefit Analysis":
     roi_difference = ((adjusted_roi - roi) / roi) * 100
     
     # Plots
-    N_range, b_values, db_dN_values = calculate_aco_incentives(N, e_q, e_c, sigma_q, sigma_c)
-    fig = make_subplots(rows=2, cols=1, subplot_titles=("Shared Savings (b) vs Team Size (N)", "Rate of Change in Shared Savings (db/dN) vs Team Size (N)"))
-    fig.add_trace(go.Scatter(x=N_range, y=b_values, mode='lines', name='b'), row=1, col=1)
-    fig.add_trace(go.Scatter(x=N_range, y=db_dN_values, mode='lines', name='db/dN'), row=2, col=1)
-    st.plotly_chart(fig)
+    # N_range, b_values, db_dN_values = calculate_aco_incentives(N, e_q, e_c, sigma_q, sigma_c)
+    # fig = make_subplots(rows=2, cols=1, subplot_titles=("Shared Savings (b) vs Team Size (N)", "Rate of Change in Shared Savings (db/dN) vs Team Size (N)"))
+    # fig.add_trace(go.Scatter(x=N_range, y=b_values, mode='lines', name='b'), row=1, col=1)
+    # fig.add_trace(go.Scatter(x=N_range, y=db_dN_values, mode='lines', name='db/dN'), row=2, col=1)
+    # st.plotly_chart(fig)
     
     # Display results
     st.write(f"### Financial Summary")

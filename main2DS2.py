@@ -109,6 +109,8 @@ if page == "Cost-Benefit Analysis":
     - Linear savings projection
     """)
 
+
+
 elif page == "Monte Carlo Simulation":
     st.title("Monte Carlo Simulation with ACO Sensitivity Analysis")
     
@@ -363,56 +365,18 @@ elif page == "Cost and Savings Breakdown":
         cost_ratio = (initial_investment/1000)/total_adjusted if total_adjusted > 0 else 0
         st.metric("Cost Ratio", f"{cost_ratio:.3f}")
 
-elif page == "Cost-Benefit Analysis":
-    st.title("Cost-Benefit Analysis")
-    
-    # User-defined inputs
-    initial_investment = st.sidebar.number_input("Initial Investment ($M)", min_value=100, max_value=1000, value=500, step=50)
-    total_projected_savings = st.sidebar.number_input("Total Projected Savings over 5 Years ($B)", min_value=1, max_value=500, value=100, step=1)
-    
-    # ROI Calculation
-    roi = total_projected_savings / (initial_investment / 1000)
-    
-    # Calculate ACO-adjusted values
+elif page == "ACO Incentive Structure Model":
+    st.title("ACO Incentive Structure Model")
     N = st.sidebar.slider("Team Size (N)", 1, 100, 20)
     e_q = st.sidebar.number_input("Quality Effort (e_q)", 0.0, 10.0, 1.0)
     e_c = st.sidebar.number_input("Cost Control Effort (e_c)", 0.0, 10.0, 1.0)
     sigma_q = st.sidebar.number_input("Quality Standard Deviation (σ_q)", 0.1, 5.0, 1.0)
     sigma_c = st.sidebar.number_input("Cost Standard Deviation (σ_c)", 0.1, 5.0, 1.0)
-    
-    # Placeholder function to calculate ACO incentives
-    def calculate_aco_incentives(N, e_q, e_c, sigma_q, sigma_c):
-        return np.linspace(1, N, 100), np.random.rand(100) * 10, np.random.rand(100) * 5
-    
     N_range, b_values, db_dN_values = calculate_aco_incentives(N, e_q, e_c, sigma_q, sigma_c)
-    avg_b = np.mean(b_values)
-    adjusted_roi = roi * (avg_b / 100)
-    roi_difference = ((adjusted_roi - roi) / roi) * 100
-    
-    # Plots
     fig = make_subplots(rows=2, cols=1, subplot_titles=("Shared Savings (b) vs Team Size (N)", "Rate of Change in Shared Savings (db/dN) vs Team Size (N)"))
     fig.add_trace(go.Scatter(x=N_range, y=b_values, mode='lines', name='b'), row=1, col=1)
     fig.add_trace(go.Scatter(x=N_range, y=db_dN_values, mode='lines', name='db/dN'), row=2, col=1)
     st.plotly_chart(fig)
-    
-    # Display results
-    st.write(f"### Financial Summary")
-    st.metric("Initial Investment", f"${initial_investment}M")
-    st.metric("Total Projected Savings (5 Years)", f"${total_projected_savings}B")
-    st.metric("Base ROI (Without ACO Adjustments)", f"{roi:.2f}x")
-    
-    # ACO-adjusted metrics
-    st.subheader("ACO Incentive Impact")
-    st.markdown(f"""
-    **Adjusted ROI**: **{adjusted_roi:.2f}x** ({roi_difference:+.1f}% from base ROI)  
-    *This accounts for:*  
-    - Average shared savings rate: {avg_b:.1f}%
-    - Current team size: N = {N}
-    - Quality effort: e_q = {e_q}
-    - Cost control effort: e_c = {e_c}
-    """)
-
-    # Model interpretation
     st.subheader("Model Interpretation")
     st.write("""
     The plots above reveal several key insights about ACO incentive structures:
@@ -431,29 +395,6 @@ elif page == "Cost-Benefit Analysis":
        - As ACOs grow, maintaining effective incentives becomes increasingly costly.
        - There may be an optimal team size that balances economies of scale with incentive costs.
     """)
-    
-    # Assumptions section
-    st.subheader("Key Assumptions")
-    st.markdown(f"""
-    - **Time Horizon**: Fixed 5-year period
-    - **Cost Structure**:
-      - Initial investment: ${initial_investment}M
-      - No recurring costs after Year 1
-    - **Savings Composition**:
-      - ACO savings: $10B/year (50%)
-      - Bundled payments: $5B/year (25%)
-      - Reduced readmissions: $5B/year (25%)
-    """)
-    
-    # Model limitations
-    st.subheader("Model Limitations")
-    st.markdown("""
-    - Simplified immediate adoption assumption
-    - Excludes inflation and demographic changes
-    - Linear savings projection
-    """)
-    
-    # Reference
     st.subheader("Reference")
     st.markdown("""
     This model is based on:

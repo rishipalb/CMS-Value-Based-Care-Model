@@ -298,5 +298,5 @@ elif page == "ACO Incentive Structure Model":
     "Structuring Incentives within Organizations: The Case of Accountable Care Organizations"  
     **NBER Working Paper No. w20034.**  
     Available at [SSRN](https://ssrn.com/abstract=2424605).
-    Posted: 14 Apr 2014 Last revised: 28 Sep 2024
+    Posted: 14 Apr 2014. Last revised: 28 Sep 2024
     """)

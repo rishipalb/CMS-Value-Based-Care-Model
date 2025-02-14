@@ -3,65 +3,45 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import matplotlib.pyplot as plt  
+import matplotlib.pyplot as plt
 
-# ✅ 1️⃣ Define the function BEFORE using it
 def calculate_aco_incentives(N, e_q, e_c, sigma_q, sigma_c):
     """
     Calculate shared savings (b) and rate of change (db/dN) in an ACO incentive model.
-    
-    Parameters:
-    - N: Team Size
-    - e_q: Quality Effort
-    - e_c: Cost Control Effort
-    - sigma_q: Quality Standard Deviation
-    - sigma_c: Cost Standard Deviation
-    
-    Returns:
-    - N_range: Team size range
-    - b_values: Shared savings over team sizes
-    - db_dN_values: Rate of change in shared savings
     """
-    N_range = np.linspace(1, N, 100)  # Generate team sizes
-    b_values = np.zeros_like(N_range)  # Shared savings values
-    db_dN_values = np.zeros_like(N_range)  # Rate of change
-
-    # Initial shared savings estimate
-    b = N * (e_q + e_c)  
+    N_range = np.linspace(1, N, 100)
+    b_values = np.zeros_like(N_range)
+    db_dN_values = np.zeros_like(N_range)
+    b = N * (e_q + e_c)
 
     for i, n in enumerate(N_range):
         db_dN = (e_q + e_c) / n
         b_values[i] = b
         db_dN_values[i] = db_dN
-        b += db_dN * (N_range[1] - N_range[0])  # Increment savings
+        b += db_dN * (N_range[1] - N_range[0])
 
     return N_range, b_values, db_dN_values
 
-# ✅ 2️⃣ Now, define global user inputs
+# Global Financial Parameters
 st.sidebar.header("Global Financial Parameters")
-
-# User inputs with unique keys
 INITIAL_INVESTMENT = st.sidebar.number_input("Initial Investment ($M)", min_value=100, max_value=1000, value=500, step=50, key="initial_investment")
-TOTAL_PROJECTED_SAVINGS = st.sidebar.number_input("Total Projected Savings ($B)", min_value=1, max_value=500, value=100, step=1, key="total_savings")
-YEARS = st.sidebar.slider("Project Duration (Years)", min_value=1, max_value=20, value=5, step=1, key="project_years")
+ANNUAL_PROJECTED_SAVINGS = st.sidebar.number_input("Annual Projected Savings ($B)", min_value=1, max_value=50, value=5, step=1, key="total_savings")
+YEARS = st.sidebar.slider("Project Duration (Years)", min_value=5, max_value=20, value=5, step=1, key="project_years")
+DELAY_YEARS = st.sidebar.slider("Delay Before Savings Start (Years)", min_value=1, max_value=10, value=4, step=1, key="delay_years")  # Add this line
 
+# ACO Parameters
 st.sidebar.header("ACO Incentive Structure Parameters")
-
-# ACO inputs with unique keys
 N = st.sidebar.slider("Team Size (N)", 1, 100, 20, key="team_size")
 e_q = st.sidebar.number_input("Quality Effort (e_q)", 0.0, 10.0, 1.0, key="quality_effort")
 e_c = st.sidebar.number_input("Cost Control Effort (e_c)", 0.0, 10.0, 1.0, key="cost_effort")
 sigma_q = st.sidebar.number_input("Quality Standard Deviation (σ_q)", 0.1, 5.0, 1.0, key="quality_std_dev")
 sigma_c = st.sidebar.number_input("Cost Standard Deviation (σ_c)", 0.1, 5.0, 1.0, key="cost_std_dev")
 
-# ✅ 3️⃣ Now, call the function (AFTER defining it)
+# Calculate ACO incentives
 N_range, b_values, db_dN_values = calculate_aco_incentives(N, e_q, e_c, sigma_q, sigma_c)
-avg_b = np.mean(b_values)  # Dynamically calculated shared savings
+avg_b = np.mean(b_values)
 
-# ✅ Define ACO-Adjusted Savings once (ensures consistency)
-aco_adjusted_savings = TOTAL_PROJECTED_SAVINGS * (avg_b / 100)
-
-# Sidebar: Navigation Menu
+# Navigation
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to", [
     "Cost-Benefit Analysis",
@@ -72,42 +52,47 @@ page = st.sidebar.radio("Go to", [
     "ACO Incentive Structure Model"
 ])
 
-# ✅ 4️⃣ Implement Cost-Benefit Analysis (Using the Fixed Function)
+# Cost-Benefit Analysis
 if page == "Cost-Benefit Analysis":
     st.title("Cost-Benefit Analysis")
     
-    # ROI Calculation
-    roi = TOTAL_PROJECTED_SAVINGS / (INITIAL_INVESTMENT / 1000)
-    adjusted_savings = TOTAL_PROJECTED_SAVINGS * (avg_b / 100)
-    adjusted_roi = roi * (avg_b / 100)
+    # Calculate ROI with delayed savings and annual savings rate
+    effective_years = YEARS - DELAY_YEARS
+    total_delayed_savings = ANNUAL_PROJECTED_SAVINGS * effective_years
+    
+    # Calculate ROI using the initial investment converted to billions
+    investment_in_billions = INITIAL_INVESTMENT / 1000
+    roi = total_delayed_savings / investment_in_billions
+    
+    # Calculate ACO-adjusted values based on the annual savings
+    adjusted_annual_savings = ANNUAL_PROJECTED_SAVINGS * (avg_b / 100)
+    adjusted_total_savings = adjusted_annual_savings * effective_years
+    adjusted_roi = adjusted_total_savings / investment_in_billions
 
-    # Display Results
+    # Display metrics
     st.metric("Initial Investment", f"${INITIAL_INVESTMENT}M")
-    st.metric("Total Projected Savings", f"${TOTAL_PROJECTED_SAVINGS}B")
+    st.metric("Annual Projected Savings", f"${ANNUAL_PROJECTED_SAVINGS:.1f}B")
+    st.metric("Total Projected Savings (Years {}-{})".format(DELAY_YEARS, YEARS), f"${total_delayed_savings:.1f}B")
     st.metric("Base ROI", f"{roi:.2f}x")
-    st.metric("ACO-Adjusted Savings", f"${aco_adjusted_savings:.2f}B")
+    st.metric("ACO-Adjusted Annual Savings", f"${adjusted_annual_savings:.2f}B")
+    st.metric("ACO-Adjusted Total Savings", f"${adjusted_total_savings:.2f}B")
     st.metric("ACO-Adjusted ROI", f"{adjusted_roi:.2f}x")
 
-
-# Monte Carlo Simulation Section
+# Monte Carlo Simulation
 elif page == "Monte Carlo Simulation":
     st.title("Monte Carlo Simulation with ACO Sensitivity Analysis")
 
     num_simulations = st.slider("Number of Simulations", 100, 10000, 1000)
-    base_annual_savings = TOTAL_PROJECTED_SAVINGS / YEARS  # Uses user-defined global YEARS
+    effective_years = YEARS - DELAY_YEARS
     savings_std_dev = st.slider("Savings Volatility ($B)", 1.0, 10.0, 5.0)
 
-    # Recalculate ACO incentives dynamically
-    N_range, b_values, db_dN_values = calculate_aco_incentives(N, e_q, e_c, sigma_q, sigma_c)
-    avg_b = np.mean(b_values)
-
     # Adjusted Monte Carlo savings
-    adjusted_mean = base_annual_savings * (avg_b / 100)
+    adjusted_annual_savings = ANNUAL_PROJECTED_SAVINGS * (avg_b / 100)
     adjusted_std_dev = savings_std_dev * (1 + (e_q + e_c) / 20)
 
     # Run simulations
-    simulated_savings = np.random.normal(adjusted_mean, adjusted_std_dev, num_simulations)
-    total_simulated_savings = simulated_savings * YEARS  
+    simulated_annual_savings = np.random.normal(adjusted_annual_savings, adjusted_std_dev, num_simulations)
+    total_simulated_savings = simulated_annual_savings * effective_years
     roi_simulations = total_simulated_savings / (INITIAL_INVESTMENT / 1000)
 
     # Create visualization
@@ -137,7 +122,6 @@ elif page == "Monte Carlo Simulation":
         row=1, col=2
     )
     
-    # Update layout
     fig.update_layout(
         title_text=f"Monte Carlo Simulation Results (n={num_simulations})",
         showlegend=False
@@ -155,56 +139,52 @@ elif page == "Monte Carlo Simulation":
                 f"${np.percentile(total_simulated_savings, 2.5):.1f}B - ${np.percentile(total_simulated_savings, 97.5):.1f}B")
     with col3:
         st.metric("Value at Risk (5%)", 
-                f"${base_annual_savings * YEARS - np.percentile(total_simulated_savings, 5):.1f}B")
+                f"${ANNUAL_PROJECTED_SAVINGS * effective_years - np.percentile(total_simulated_savings, 5):.1f}B")
+        
 
-    # Interpretation Guide
-    st.subheader("Interpretation Guide")
-    st.markdown("""
-    1. **Savings Histogram**: Shows the distribution of total adjusted savings over the project period.
-    2. **ROI Cumulative Probability**: Helps understand the likelihood of reaching different ROI levels.
-    3. **Confidence Intervals**: 
-       - The 95% confidence range indicates the expected variation in outcomes.
-       - **Value at Risk (VaR)** helps assess potential downside risk.
-    """)
-
-
-    st.metric("Total Implementation Cost", f"${INITIAL_INVESTMENT / 1000:.1f}B")
-
-# Implementation Cost vs. Savings Section
+# Implementation Cost vs. Savings
 elif page == "Implementation Cost vs. Savings":
     st.title("Implementation Cost vs. Savings Over Time")
 
-    years_range = np.arange(1, YEARS + 1)  # Define the years
-    base_savings = [TOTAL_PROJECTED_SAVINGS / YEARS * y for y in years_range]  # List of yearly savings
-    implementation_cost = [INITIAL_INVESTMENT / 1000] + [0] * (YEARS - 1)  # Initial cost only in Year 1
-
-    # ✅ Fix: Apply ACO Adjustment Correctly (Adjust Total Savings, Not Per Year)
-    total_aco_adjusted_savings = TOTAL_PROJECTED_SAVINGS * (avg_b / 100)  # ✅ Corrected
+    years_range = np.arange(1, YEARS + 1)
     
-    # ✅ Correct Adjusted Yearly Savings (Distribute over the years)
-    adjusted_savings_per_year = [total_aco_adjusted_savings / YEARS] * YEARS  # List of yearly ACO-adjusted savings
+    # Implementation cost (only in year 1)
+    implementation_cost = [INITIAL_INVESTMENT / 1000] + [0] * (YEARS - 1)
+    
+    # Calculate savings with delay
+    base_savings = []
+    adjusted_savings = []
+    
+    for year in years_range:
+        if year <= DELAY_YEARS:  # Changed from < to <= to include the delay year
+            base_savings.append(0)
+            adjusted_savings.append(0)
+        else:
+            base_savings.append(ANNUAL_PROJECTED_SAVINGS)
+            adjusted_savings.append(ANNUAL_PROJECTED_SAVINGS * (avg_b / 100))
 
-    # ✅ Fix: Ensure y-values are lists, not single float values
+    # Create visualization
     fig = go.Figure()
     fig.add_trace(go.Bar(x=years_range, y=implementation_cost, name='Implementation Cost', marker_color='#e74c3c'))
     fig.add_trace(go.Bar(x=years_range, y=base_savings, name='Potential Savings', marker_color='#2ecc71'))
-    fig.add_trace(go.Bar(x=years_range, y=adjusted_savings_per_year, name='ACO-Adjusted Savings', marker_color='#3498db'))  # ✅ Fixed
+    fig.add_trace(go.Bar(x=years_range, y=adjusted_savings, name='ACO-Adjusted Savings', marker_color='#3498db'))
 
     fig.update_layout(
         barmode='group',
-        title=f"Implementation Cost vs. Savings Over {YEARS} Years",
+        title=f"Implementation Cost vs. Savings Over {YEARS} Years (Savings Start Year {DELAY_YEARS + 1})",  # Updated to show correct start year
         xaxis_title='Years',
         yaxis_title='Amount ($B)',
         height=600
     )
     st.plotly_chart(fig)
 
-    # ✅ Fix: Display correct Total ACO-Adjusted Savings
-    st.metric("Total Projected Savings", f"${TOTAL_PROJECTED_SAVINGS}B")
-    st.metric("ACO-Adjusted Savings", f"${total_aco_adjusted_savings:.2f}B")  # ✅ Fixed
+    effective_years = YEARS - DELAY_YEARS
+    total_base_savings = ANNUAL_PROJECTED_SAVINGS * effective_years
+    total_adjusted_savings = (ANNUAL_PROJECTED_SAVINGS * (avg_b / 100)) * effective_years
+    
+    st.metric("Total Projected Savings", f"${total_base_savings:.2f}B")
+    st.metric("Total ACO-Adjusted Savings", f"${total_adjusted_savings:.2f}B")
     st.metric("Total Implementation Cost", f"${INITIAL_INVESTMENT / 1000:.1f}B")
-
-
 
 # Implementation Timeline Section
 elif page == "Implementation Timeline":
@@ -232,13 +212,17 @@ elif page == "Cost and Savings Breakdown":
     cost_percentages = [0.30, 0.25, 0.20, 0.15, 0.10]  # 30%, 25%, 20%, 15%, 10%
     cost_values = [INITIAL_INVESTMENT * p / 100 for p in cost_percentages]  # Dynamic calculation based on investment
 
-    # ✅ Define Savings Breakdown (Total = TOTAL_PROJECTED_SAVINGS)
+    # ✅ Calculate total savings over effective period
+    effective_years = YEARS - DELAY_YEARS
+    total_projected_savings = ANNUAL_PROJECTED_SAVINGS * effective_years
+
+    # ✅ Define Savings Breakdown
     savings_labels = ["ACOs", "Bundled Payments", "Readmissions"]
     savings_distribution = [0.5, 0.25, 0.25]  # 50%, 25%, 25%
-    savings_components = [TOTAL_PROJECTED_SAVINGS * dist for dist in savings_distribution]
+    savings_components = [total_projected_savings * dist for dist in savings_distribution]
 
     # ✅ ACO-Adjusted Savings Calculation
-    aco_adjusted_savings = TOTAL_PROJECTED_SAVINGS * (avg_b / 100)  # Apply ACO impact
+    aco_adjusted_savings = total_projected_savings * (avg_b / 100)  # Apply ACO impact
 
     # ✅ Cost-to-Savings Ratio Calculation
     cost_to_savings_ratio = (INITIAL_INVESTMENT / 1000) / aco_adjusted_savings if aco_adjusted_savings > 0 else 0
@@ -251,9 +235,9 @@ elif page == "Cost and Savings Breakdown":
     # ✅ Plot Savings Breakdown
     fig2, ax2 = plt.subplots()
     ax2.pie(savings_components, labels=savings_labels, 
-           autopct=lambda p: f'${p*TOTAL_PROJECTED_SAVINGS/100:.1f}B',
+           autopct=lambda p: f'${p*total_projected_savings/100:.1f}B',
            startangle=140, colors=['#2ecc71', '#3498db', '#9b59b6'])
-    ax2.set_title(f"Savings Breakdown (Total: ${TOTAL_PROJECTED_SAVINGS:.1f}B)")
+    ax2.set_title(f"Savings Breakdown\nTotal: ${total_projected_savings:.1f}B (Years {DELAY_YEARS}-{YEARS})")
 
     # ✅ Display Both Charts in Streamlit
     col1, col2 = st.columns(2)
@@ -263,25 +247,39 @@ elif page == "Cost and Savings Breakdown":
         st.pyplot(fig2)  # ✅ Show Savings Breakdown Chart
 
     # ✅ Display Key Metrics
-    st.metric("Total Savings", f"${TOTAL_PROJECTED_SAVINGS:.1f}B")
-    st.metric("ACO-Adjusted Savings", f"${aco_adjusted_savings:.2f}B")  # ✅ Corrected ACO savings
+    st.metric("Annual Projected Savings", f"${ANNUAL_PROJECTED_SAVINGS:.1f}B")
+    st.metric("Total Projected Savings (Years {}-{})".format(DELAY_YEARS, YEARS), f"${total_projected_savings:.1f}B")
+    st.metric("ACO-Adjusted Total Savings", f"${aco_adjusted_savings:.2f}B")  # ✅ Corrected ACO savings
     st.metric("Implementation Cost", f"${INITIAL_INVESTMENT}M")
     st.metric("Cost-to-Savings Ratio", f"{cost_to_savings_ratio:.3f}")  # ✅ Correctly calculated ratio
 
-# ACO Incentive Structure Model Section
+
+# ACO Incentive Structure Model
 elif page == "ACO Incentive Structure Model":
     st.title("ACO Incentive Structure Model")
 
-    # Ensure ACO incentive values are calculated
+    # Calculate ACO incentive values
     N_range, b_values, db_dN_values = calculate_aco_incentives(N, e_q, e_c, sigma_q, sigma_c)
 
-    fig = make_subplots(rows=2, cols=1, subplot_titles=("Shared Savings (b) vs Team Size (N)", "Rate of Change in Shared Savings (db/dN) vs Team Size (N)"))
+    fig = make_subplots(rows=2, cols=1, 
+                       subplot_titles=("Shared Savings (b) vs Team Size (N)", 
+                                     "Rate of Change in Shared Savings (db/dN) vs Team Size (N)"))
+    
     fig.add_trace(go.Scatter(x=N_range, y=b_values, mode='lines', name='Shared Savings (b)'), row=1, col=1)
     fig.add_trace(go.Scatter(x=N_range, y=db_dN_values, mode='lines', name='Rate of Change (db/dN)'), row=2, col=1)
     
+    fig.update_layout(height=800, showlegend=True)
     st.plotly_chart(fig)
 
-    # Explanation
+    # Add explanation about delay impact
+    st.info(f"""
+    Model Interpretation with Delayed Savings:
+    - Savings begin in Year {DELAY_YEARS}
+    - Total effective savings period: {YEARS - DELAY_YEARS} years
+    - ACO incentives are calculated on realized savings only
+    """)
+
+        # Explanation
     st.subheader("Model Interpretation")
     st.markdown("""
     **Insights from ACO Incentive Model:**
@@ -297,6 +295,5 @@ elif page == "ACO Incentive Structure Model":
     Frandsen, Brigham R. & Rebitzer, James B. (2014).  
     "Structuring Incentives within Organizations: The Case of Accountable Care Organizations"  
     **NBER Working Paper No. w20034.**  
-    Available at [SSRN](https://ssrn.com/abstract=2424605).
-    Posted: 14 Apr 2014. Last revised: 28 Sep 2024
+    Available at [SSRN](https://ssrn.com/abstract=2424605)
     """)

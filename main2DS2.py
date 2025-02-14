@@ -215,11 +215,14 @@ elif page == "Cost and Savings Breakdown":
     # ✅ Calculate total savings over effective period
     effective_years = YEARS - DELAY_YEARS
     total_projected_savings = ANNUAL_PROJECTED_SAVINGS * effective_years
+    
+    # ✅ Calculate ACO-adjusted total savings
+    aco_adjusted_total = total_projected_savings * (avg_b / 100)
 
-    # ✅ Define Savings Breakdown
+    # ✅ Define Savings Breakdown (using ACO-adjusted numbers)
     savings_labels = ["ACOs", "Bundled Payments", "Readmissions"]
     savings_distribution = [0.5, 0.25, 0.25]  # 50%, 25%, 25%
-    savings_components = [total_projected_savings * dist for dist in savings_distribution]
+    savings_components = [aco_adjusted_total * dist for dist in savings_distribution]  # Using ACO-adjusted total
 
     # ✅ ACO-Adjusted Savings Calculation
     aco_adjusted_savings = total_projected_savings * (avg_b / 100)  # Apply ACO impact
@@ -232,12 +235,12 @@ elif page == "Cost and Savings Breakdown":
     ax1.pie(cost_values, labels=cost_labels, autopct=lambda p: f'${p*INITIAL_INVESTMENT/100:.1f}M', startangle=140)
     ax1.set_title(f"Cost Breakdown (Total: ${INITIAL_INVESTMENT}M)")
 
-    # ✅ Plot Savings Breakdown
+    # ✅ Plot Savings Breakdown (now using ACO-adjusted numbers)
     fig2, ax2 = plt.subplots()
     ax2.pie(savings_components, labels=savings_labels, 
-           autopct=lambda p: f'${p*total_projected_savings/100:.1f}B',
+           autopct=lambda p: f'${p*aco_adjusted_total/100:.1f}B',
            startangle=140, colors=['#2ecc71', '#3498db', '#9b59b6'])
-    ax2.set_title(f"Savings Breakdown\nTotal: ${total_projected_savings:.1f}B (Years {DELAY_YEARS}-{YEARS})")
+    ax2.set_title(f"ACO-Adjusted Savings Breakdown\nTotal: ${aco_adjusted_total:.1f}B (Years {DELAY_YEARS}-{YEARS})")
 
     # ✅ Display Both Charts in Streamlit
     col1, col2 = st.columns(2)

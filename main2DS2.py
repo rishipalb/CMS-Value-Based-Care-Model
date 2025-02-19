@@ -23,6 +23,7 @@ def calculate_aco_incentives(N, e_q, e_c, sigma_q, sigma_c):
     return N_range, b_values, db_dN_values
 
 # Global Financial Parameters
+st.sidebar.header("Health Care Markets Project")
 st.sidebar.header("Global Financial Parameters")
 INITIAL_INVESTMENT = st.sidebar.number_input("Initial Investment ($M)", min_value=100, max_value=1000, value=500, step=50, key="initial_investment")
 ANNUAL_PROJECTED_SAVINGS = st.sidebar.number_input("Annual Projected Savings ($B)", min_value=1, max_value=50, value=5, step=1, key="total_savings")

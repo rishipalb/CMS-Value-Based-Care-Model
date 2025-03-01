@@ -32,7 +32,7 @@ DELAY_YEARS = st.sidebar.slider("Delay Before Savings Start (Years)", min_value=
 
 # ACO Parameters
 st.sidebar.header("ACO Incentive Structure Parameters")
-N = st.sidebar.slider("Team Size (N)", 1, 100, 20, key="team_size")
+N = st.sidebar.slider("Team Size (N)", 1, 1000, 20, key="team_size")
 e_q = st.sidebar.number_input("Quality Effort (e_q)", 0.0, 10.0, 1.0, key="quality_effort")
 e_c = st.sidebar.number_input("Cost Control Effort (e_c)", 0.0, 10.0, 1.0, key="cost_effort")
 sigma_q = st.sidebar.number_input("Quality Standard Deviation (σ_q)", 0.1, 5.0, 1.0, key="quality_std_dev")
